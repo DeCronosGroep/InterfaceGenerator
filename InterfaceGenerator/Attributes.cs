@@ -1,43 +1,46 @@
-﻿namespace InterfaceGenerator
+﻿namespace InterfaceGenerator;
+
+internal class Attributes
 {
-    
-    internal class Attributes
-    {
-        public const string AttributesNamespace = nameof(InterfaceGenerator);
+    public static string AttributesNamespace { get; set; } = nameof(InterfaceGenerator);
 
-        public const string GenerateAutoInterfaceClassname = "GenerateAutoInterfaceAttribute";
-        public const string AutoInterfaceIgnoreAttributeClassname = "AutoInterfaceIgnoreAttribute";
+    public const string GenerateAutoInterfaceClassname = "GenerateAutoInterfaceAttribute";
+    public const string AutoInterfaceIgnoreAttributeClassname = "AutoInterfaceIgnoreAttribute";
 
-        public const string VisibilityModifierPropName = "VisibilityModifier";
-        public const string InterfaceNamePropName = "Name";
-        
-        public static readonly string AttributesSourceCode = $@"
+    public const string VisibilityModifierPropName = "VisibilityModifier";
+    public const string InterfaceNamePropName = "Name";
 
-using System;
-using System.Diagnostics;
+    public static string AttributesSourceCode => $$"""
+            global using {{GenerateAutoInterfaceClassname}} = {{AttributesNamespace}}.{{GenerateAutoInterfaceClassname}};
+            global using {{AutoInterfaceIgnoreAttributeClassname}} = {{AttributesNamespace}}.{{AutoInterfaceIgnoreAttributeClassname}};
 
-#nullable enable
+            using System;
+            using System.Diagnostics;
 
-namespace {AttributesNamespace} 
-{{
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-    [Conditional(""CodeGeneration"")]
-    internal sealed class {GenerateAutoInterfaceClassname} : Attribute
-    {{
-        public string? {VisibilityModifierPropName} {{ get; init; }} 
-        public string? {InterfaceNamePropName} {{ get; init; }} 
+            #nullable enable
 
-        public {GenerateAutoInterfaceClassname}()
-        {{
-        }}
-    }}
+            #pragma warning disable MA0048 // File name must match type name
 
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
-    [Conditional(""CodeGeneration"")]
-    internal sealed class {AutoInterfaceIgnoreAttributeClassname} : Attribute
-    {{
-    }}
-}}
-";
-    }
+            namespace {{AttributesNamespace}};
+            
+            [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+            [Conditional("CodeGeneration")]
+            internal sealed class {{GenerateAutoInterfaceClassname}} : Attribute
+            {
+                public string? {{VisibilityModifierPropName}} { get; init; } 
+                public string? {{InterfaceNamePropName}} { get; init; } 
+
+                public {{GenerateAutoInterfaceClassname}}()
+                {
+                }
+            }
+
+            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
+            [Conditional("CodeGeneration")]
+            internal sealed class {{AutoInterfaceIgnoreAttributeClassname}} : Attribute
+            {
+            }
+
+            #pragma warning restore MA0048 // File name must match type name
+            """;
 }
