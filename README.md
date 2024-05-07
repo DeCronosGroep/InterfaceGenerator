@@ -8,7 +8,7 @@ Inspired by [net_automatic_interface](https://github.com/codecentric/net_automat
 
 When you add this reference be sure you include `compile` asset and exclude `runtime`.
 
-```json
+```xml
     <PackageReference Include="CronosCore.InterfaceGenerator" Version="1.1.0" IncludeAssets="compile; build; native; contentfiles; analyzers; buildtransitive" />
 ```
 
