@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace InterfaceGenerator
 {
-    [Generator]
+    [Generator(LanguageNames.CSharp)]
     public class AutoInterfaceGenerator : ISourceGenerator
     {
         private INamedTypeSymbol _generateAutoInterfaceAttribute = null!;
@@ -22,14 +22,6 @@ namespace InterfaceGenerator
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-
-            #if DEBUG
-            if (!Debugger.IsAttached)
-            {
-                // sadly this is Windows only so as of now :(
-                Debugger.Launch();
-            }
-            #endif
         }
 
         public void Execute(GeneratorExecutionContext context)
@@ -49,17 +41,17 @@ namespace InterfaceGenerator
             var descriptor = new DiagnosticDescriptor(
                 "InterfaceGenerator.CriticalError",
                 $"Exception thrown in InterfaceGenerator",
-                $"{exception.GetType().FullName} {exception.Message} {exception.StackTrace.Trim()}",
+                $"{exception.GetType().FullName} {exception.Message} {exception.StackTrace?.Trim()}",
                 "InterfaceGenerator",
                 DiagnosticSeverity.Error,
                 true,
                 customTags: WellKnownDiagnosticTags.AnalyzerException);
 
             var diagnostic = Diagnostic.Create(descriptor, null);
-            
+
             context.ReportDiagnostic(diagnostic);
         }
-        
+
         private void ExecuteCore(GeneratorExecutionContext context)
         {
             // setting the culture to invariant prevents errors such as emitting a decimal comma (0,1) instead of
@@ -67,17 +59,9 @@ namespace InterfaceGenerator
             var prevCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-            GenerateAttributes(context);
             GenerateInterfaces(context);
 
             Thread.CurrentThread.CurrentCulture = prevCulture;
-        }
-
-        private static void GenerateAttributes(GeneratorExecutionContext context)
-        {
-            context.AddSource(
-                Attributes.GenerateAutoInterfaceClassname,
-                SourceText.From(Attributes.AttributesSourceCode, Encoding.UTF8));
         }
 
         private void GenerateInterfaces(GeneratorExecutionContext context)
@@ -92,7 +76,7 @@ namespace InterfaceGenerator
 
             var classSymbols = GetImplTypeSymbols(compilation, receiver);
 
-            List<string> classSymbolNames = new List<string>();
+            List<string> classSymbolNames = [];
 
             foreach (var implTypeSymbol in classSymbols)
             {
@@ -101,23 +85,23 @@ namespace InterfaceGenerator
                     continue;
                 }
 
-                if(classSymbolNames.Contains(implTypeSymbol.GetFullMetadataName(useNameWhenNotFound: true)))
+                if (classSymbolNames.Contains(implTypeSymbol.GetFullMetadataName(useNameWhenNotFound: true)))
                 {
                     continue; // partial class, already added
                 }
 
                 classSymbolNames.Add(implTypeSymbol.GetFullMetadataName(useNameWhenNotFound: true));
 
-                var attribute = attributes.Single(); 
-                var source = SourceText.From(GenerateInterfaceCode(implTypeSymbol, attribute), Encoding.UTF8);
+                var attribute = attributes.Single();
+                var source = SourceText.From(GenerateInterfaceCode(implTypeSymbol, attribute, out var interfaceFullName), Encoding.UTF8);
 
-                context.AddSource($"{implTypeSymbol.GetFullMetadataName(useNameWhenNotFound: true)}_AutoInterface.g.cs", source);
+                context.AddSource($"{interfaceFullName}.g.cs", source);
             }
         }
 
         private static string InferVisibilityModifier(ISymbol implTypeSymbol, AttributeData attributeData)
         {
-            string? result = attributeData.GetNamedParamValue(Attributes.VisibilityModifierPropName);
+            string? result = attributeData.GetNamedParamValue(nameof(GenerateAutoInterfaceAttribute.VisibilityModifier));
             if (!string.IsNullOrEmpty(result))
             {
                 return result!;
@@ -126,16 +110,16 @@ namespace InterfaceGenerator
             return implTypeSymbol.DeclaredAccessibility switch
             {
                 Accessibility.Public => "public",
-                _                    => "internal",
+                _ => "internal",
             };
         }
 
         private static string InferInterfaceName(ISymbol implTypeSymbol, AttributeData attributeData)
         {
-            return attributeData.GetNamedParamValue(Attributes.InterfaceNamePropName) ?? $"I{implTypeSymbol.Name}";
+            return attributeData.GetNamedParamValue(nameof(GenerateAutoInterfaceAttribute.Name)) ?? $"I{implTypeSymbol.Name}";
         }
 
-        private string GenerateInterfaceCode(INamedTypeSymbol implTypeSymbol, AttributeData attributeData)
+        private string GenerateInterfaceCode(INamedTypeSymbol implTypeSymbol, AttributeData attributeData, out string interfaceFullName)
         {
             using var stream = new MemoryStream();
             var streamWriter = new StreamWriter(stream, Encoding.UTF8);
@@ -145,10 +129,13 @@ namespace InterfaceGenerator
             var interfaceName = InferInterfaceName(implTypeSymbol, attributeData);
             var visibilityModifier = InferVisibilityModifier(implTypeSymbol, attributeData);
 
-            codeWriter.WriteLine("namespace {0}", namespaceName);
-            codeWriter.WriteLine("{");
+            interfaceFullName = $"{namespaceName}.{interfaceName}";
 
-            ++codeWriter.Indent;
+            codeWriter.WriteLine("#nullable enable");
+            codeWriter.WriteLine();
+            codeWriter.WriteLine("namespace {0};", namespaceName);
+            codeWriter.WriteLine();
+
             WriteSymbolDocsIfPresent(codeWriter, implTypeSymbol);
             codeWriter.Write("{0} partial interface {1}", visibilityModifier, interfaceName);
             WriteTypeGenericsIfNeeded(codeWriter, implTypeSymbol);
@@ -157,9 +144,6 @@ namespace InterfaceGenerator
 
             ++codeWriter.Indent;
             GenerateInterfaceMemberDefinitions(codeWriter, implTypeSymbol);
-            --codeWriter.Indent;
-
-            codeWriter.WriteLine("}");
             --codeWriter.Indent;
 
             codeWriter.WriteLine("}");
@@ -188,12 +172,12 @@ namespace InterfaceGenerator
         {
             foreach (var member in implTypeSymbol.GetMembers())
             {
-                if (member.DeclaredAccessibility != Accessibility.Public || 
+                if (member.DeclaredAccessibility != Accessibility.Public ||
                     member.HasAttribute(_ignoreAttribute))
                 {
                     continue;
                 }
-                
+
                 GenerateInterfaceMemberDefinition(writer, member);
             }
         }
@@ -220,10 +204,10 @@ namespace InterfaceGenerator
             }
 
             // omit the fist and last lines to skip the <member> tag
-            
+
             var reader = new StringReader(xml);
             var lines = new List<string>();
-            
+
             while (true)
             {
                 var line = reader.ReadLine();
@@ -231,7 +215,7 @@ namespace InterfaceGenerator
                 {
                     break;
                 }
-                
+
                 lines.Add(line);
             }
 
@@ -253,10 +237,10 @@ namespace InterfaceGenerator
             {
                 return;
             }
-            
+
             bool hasPublicGetter = propertySymbol.GetMethod is not null &&
                                    IsPublicOrInternal(propertySymbol.GetMethod);
-            
+
             bool hasPublicSetter = propertySymbol.SetMethod is not null &&
                                    IsPublicOrInternal(propertySymbol.SetMethod);
 
@@ -266,7 +250,7 @@ namespace InterfaceGenerator
             }
 
             WriteSymbolDocsIfPresent(writer, propertySymbol);
-            
+
             if (propertySymbol.IsIndexer)
             {
                 writer.Write("{0} this[", propertySymbol.Type);
@@ -307,13 +291,13 @@ namespace InterfaceGenerator
                 return;
             }
 
-            if (methodSymbol.IsImplicitlyDeclared && methodSymbol.Name != "Deconstruct") 
+            if (methodSymbol.IsImplicitlyDeclared && methodSymbol.Name != "Deconstruct")
             {
                 // omit methods that are auto generated by the compiler (eg. record's methods),
                 // except for the record Deconstruct method
                 return;
             }
-            
+
             WriteSymbolDocsIfPresent(writer, methodSymbol);
 
             writer.Write("{0} {1}", methodSymbol.ReturnType, methodSymbol.Name); // ex. int Foo
@@ -357,7 +341,7 @@ namespace InterfaceGenerator
                     writer.Write("in ");
                     break;
             }
-            
+
             writer.Write(param.Type);
             writer.Write(" ");
 
@@ -365,7 +349,7 @@ namespace InterfaceGenerator
             {
                 writer.Write("@");
             }
-            
+
             writer.Write(param.Name);
 
             if (param.HasExplicitDefaultValue)
@@ -397,10 +381,10 @@ namespace InterfaceGenerator
                         writer.Write(" = {0}m", param.ExplicitDefaultValue);
                         break;
                     case nameof(Boolean):
-                        writer.Write(" = {0}", param.ExplicitDefaultValue.ToString().ToLower());
+                        writer.Write(" = {0}", param.ExplicitDefaultValue?.ToString()?.ToLower());
                         break;
                     case nameof(Nullable<bool>):
-                        writer.Write(" = {0}", param.ExplicitDefaultValue.ToString().ToLower());
+                        writer.Write(" = {0}", param.ExplicitDefaultValue?.ToString()?.ToLower());
                         break;
                     default:
                         writer.Write(" = {0}", param.ExplicitDefaultValue);
@@ -429,10 +413,10 @@ namespace InterfaceGenerator
         private void InitAttributes(Compilation compilation)
         {
             _generateAutoInterfaceAttribute = compilation.GetTypeByMetadataName(
-                $"{Attributes.AttributesNamespace}.{Attributes.GenerateAutoInterfaceClassname}")!;
-            
+                $"{nameof(InterfaceGenerator)}.{nameof(GenerateAutoInterfaceAttribute)}")!;
+
             _ignoreAttribute = compilation.GetTypeByMetadataName(
-                $"{Attributes.AttributesNamespace}.{Attributes.AutoInterfaceIgnoreAttributeClassname}")!;
+                $"{nameof(InterfaceGenerator)}.{nameof(AutoInterfaceIgnoreAttribute)}")!;
         }
 
         private static IEnumerable<INamedTypeSymbol> GetImplTypeSymbols(Compilation compilation, SyntaxReceiver receiver)
@@ -449,13 +433,7 @@ namespace InterfaceGenerator
 
         private static Compilation GetCompilation(GeneratorExecutionContext context)
         {
-            var options = context.Compilation.SyntaxTrees.First().Options as CSharpParseOptions;
-
-            var compilation = context.Compilation.AddSyntaxTrees(
-                CSharpSyntaxTree.ParseText(
-                    SourceText.From(Attributes.AttributesSourceCode, Encoding.UTF8), options));
-
-            return compilation;
+            return context.Compilation;
         }
     }
 }

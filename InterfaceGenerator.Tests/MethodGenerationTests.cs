@@ -226,7 +226,7 @@ public class MethodGenerationTests
         parameters[7].DefaultValue.Should().Be(true);
         parameters[8].DefaultValue.Should().Be(false);
         parameters[9].DefaultValue.Should().Be(null);
-        
+
         _sut.VoidMethodWithOptionalParams();
     }
 
@@ -285,7 +285,7 @@ internal class MethodsTestService : IMethodsTestService
 
     public void VoidMethodWithOutParam(out string a)
     {
-        a = default;
+        a = default!;
     }
 
     public void VoidMethodWithRefParam(ref string a)

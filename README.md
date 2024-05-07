@@ -1,10 +1,19 @@
-# InterfaceGenerator [![NuGet Version](http://img.shields.io/nuget/v/InterfaceGenerator.svg?style=flat)](https://www.nuget.org/packages/InterfaceGenerator/)
+# InterfaceGenerator
 
 A simple source generator that creates interfaces by implementations. Useful for when you need an interface purely for the sake of mocking, or maybe you're not sure if you'll need the abstraction later on.
 
 Inspired by [net_automatic_interface](https://github.com/codecentric/net_automatic_interface)
 
-Example user implementation:
+## Add as PackageReference
+
+When you add this reference be sure you include `compile` asset and exclude `runtime`.
+
+```json
+    <PackageReference Include="CronosCore.InterfaceGenerator" Version="1.1.0" IncludeAssets="compile; build; native; contentfiles; analyzers; buildtransitive" />
+```
+
+## Example user implementation
+
 ```cs
 [GenerateAutoInterface]
 public class SampleService : ISampleService
@@ -19,6 +28,7 @@ public class SampleService : ISampleService
 ```
 
 Auto generated interface:
+
 ```cs
 public partial interface ISampleService
 {
@@ -27,19 +37,18 @@ public partial interface ISampleService
 }
 ```
 
-<br>
+## Supports
 
-Supports:
- - Methods, properties, indexers.
- - Default arguments, `params` arguments.
- - Generic types and methods.
- - XML docs.
- - Explicit interface names (using the `Name` property on `GenerateAutoInterface`).
- - Explicit interface visibility (using the `VisibilityModifier` property on `GenerateAutoInterface`).
- - Explicitly excluding a member from the interface (using `[AutoInterfaceIgnore]`).
- 
-Missing:
- - Events.
- - Nested types.
- - Probably a bunch of edge cases I forgot about.
- 
+- Methods, properties, indexers.
+- Default arguments, `params` arguments.
+- Generic types and methods.
+- XML docs.
+- Explicit interface names (using the `Name` property on `GenerateAutoInterface`).
+- Explicit interface visibility (using the `VisibilityModifier` property on `GenerateAutoInterface`).
+- Explicitly excluding a member from the interface (using `[AutoInterfaceIgnore]`).
+
+## Missing
+
+- Events.
+- Nested types.
+- Probably a bunch of edge cases I forgot about.

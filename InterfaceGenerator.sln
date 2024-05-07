@@ -1,8 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterfaceGenerator", "InterfaceGenerator\InterfaceGenerator.csproj", "{D40E2D60-5580-42D2-8316-F5AAA42CFBF6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterfaceGenerator.Tests", "InterfaceGenerator.Tests\InterfaceGenerator.Tests.csproj", "{D39C541E-9EDC-41E9-BBD8-FAA9DA602CC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterfaceGenerator.Attributes", "InterfaceGenerator.Attributes\InterfaceGenerator.Attributes.csproj", "{C5CA1FC9-D1A9-45C0-AD8B-B8F8A5D15DE1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +21,9 @@ Global
 		{D39C541E-9EDC-41E9-BBD8-FAA9DA602CC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D39C541E-9EDC-41E9-BBD8-FAA9DA602CC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D39C541E-9EDC-41E9-BBD8-FAA9DA602CC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5CA1FC9-D1A9-45C0-AD8B-B8F8A5D15DE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5CA1FC9-D1A9-45C0-AD8B-B8F8A5D15DE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5CA1FC9-D1A9-45C0-AD8B-B8F8A5D15DE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5CA1FC9-D1A9-45C0-AD8B-B8F8A5D15DE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

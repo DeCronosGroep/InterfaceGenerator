@@ -1,35 +1,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard2</TargetFramework>
-        <LangVersion>9.0</LangVersion>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Version>1.1.0</Version>
+        <LangVersion>12.0</LangVersion>
         <Nullable>enable</Nullable>
-        <PackageVersion>1.0.14</PackageVersion>
-
-		<developmentDependency>true</developmentDependency>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<IncludeBuildOutput>false</IncludeBuildOutput>
-		<NoPackageAnalysis>true</NoPackageAnalysis>
-    </PropertyGroup>
-    
-    <PropertyGroup>
-        <Authors>R. David</Authors>
-        <Title>InterfaceGenerator</Title>
-        <Description>A source generator that creates interfaces from implementations</Description>
-        <PackageProjectUrl>https://github.com/daver32/InterfaceGenerator</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/daver32/InterfaceGenerator/blob/master/LICENSE</PackageLicenseUrl>
-        <RepositoryUrl>https://github.com/daver32/InterfaceGenerator</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
+        <PackageId>CronosCore.$(AssemblyName)</PackageId>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DebugType>embedded</DebugType>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <NoWarn>NU5128</NoWarn>
+        <!--Metadata-->
+        <Authors>2sky NV</Authors>
+        <Description>Source generator that creates interfaces from implementations</Description>
+        <!-- Not sure if needed? -->
+        <!-- <developmentDependency>true</developmentDependency> -->
+        <!-- <NoPackageAnalysis>true</NoPackageAnalysis> -->
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.2.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" >
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.9.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+        <ProjectReference Include="..\InterfaceGenerator.Attributes\InterfaceGenerator.Attributes.csproj" PrivateAssets="all"/>
     </ItemGroup>
 
     <ItemGroup>
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(OutputPath)\InterfaceGenerator.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(OutputPath)\InterfaceGenerator.Attributes.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
     </ItemGroup>
+
 </Project>

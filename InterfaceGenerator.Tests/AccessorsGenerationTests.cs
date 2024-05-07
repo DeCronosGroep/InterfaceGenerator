@@ -17,7 +17,7 @@ public class AccessorsGenerationTests
     [Fact]
     public void GetSetIndexer_IsImplemented()
     {
-        var indexer = typeof(IAccessorsTestsService).GetIndexerByParameterTypes(new[] { typeof(string) });
+        var indexer = typeof(IAccessorsTestsService).GetIndexerByParameterTypes(new[] { typeof(string) }); // Note: GetIndexerByParameterTypes is method from FluentAssertions 5.10.3. In later versions this method is not accessible anymore.
 
         indexer.Should().NotBeNull();
 
@@ -146,20 +146,20 @@ internal class AccessorsTestsService : IAccessorsTestsService
         }
     }
 
-    public string PublicProperty { get; set; }
+    public string PublicProperty { get; set; } = null!;
 
-    public string InitOnlyProperty { get; init; }
+    public string InitOnlyProperty { get; init; } = null!;
 
-    public string PropertyWithPrivateSetter { get; private set; }
+    public string PropertyWithPrivateSetter { get; private set; } = null!;
 
-    public string PropertyWithPrivateGetter { private get; set; }
+    public string PropertyWithPrivateGetter { private get; set; } = null!;
 
-    public string PropertyWithProtectedSetter { get; protected set; }
+    public string PropertyWithProtectedSetter { get; protected set; } = null!;
 
-    public string PropertyWithProtectedGetter { protected get; set; }
+    public string PropertyWithProtectedGetter { protected get; set; } = null!;
 
-    [AutoInterfaceIgnore] public string IgnoredProperty { get; set; }
+    [AutoInterfaceIgnore] public string IgnoredProperty { get; set; } = null!;
 
-    public static string StaticProperty { get; set; }
+    public static string StaticProperty { get; set; } = null!;
 }
 // ReSharper enable UnusedMember.Local, ValueParameterNotUsed
