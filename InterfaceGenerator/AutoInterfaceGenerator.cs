@@ -99,19 +99,11 @@ namespace InterfaceGenerator
             }
         }
 
-        private static string InferVisibilityModifier(ISymbol implTypeSymbol, AttributeData attributeData)
+        private static string InferVisibilityModifier(AttributeData attributeData)
         {
-            string? result = attributeData.GetNamedParamValue(nameof(GenerateAutoInterfaceAttribute.VisibilityModifier));
-            if (!string.IsNullOrEmpty(result))
-            {
-                return result!;
-            }
+            var result = attributeData.GetNamedParamValue(nameof(GenerateAutoInterfaceAttribute.VisibilityModifier));
 
-            return implTypeSymbol.DeclaredAccessibility switch
-            {
-                Accessibility.Public => "public",
-                _ => "internal",
-            };
+            return !string.IsNullOrEmpty(result) ? result! : "public";
         }
 
         private static string InferInterfaceName(ISymbol implTypeSymbol, AttributeData attributeData)
@@ -127,7 +119,7 @@ namespace InterfaceGenerator
 
             var namespaceName = implTypeSymbol.ContainingNamespace.ToDisplayString();
             var interfaceName = InferInterfaceName(implTypeSymbol, attributeData);
-            var visibilityModifier = InferVisibilityModifier(implTypeSymbol, attributeData);
+            var visibilityModifier = InferVisibilityModifier(attributeData);
 
             interfaceFullName = $"{namespaceName}.{interfaceName}";
 

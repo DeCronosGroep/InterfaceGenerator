@@ -28,10 +28,10 @@ public class VisibilityModifierTests
     }
 
     [Fact]
-    public void IImplicitlyInternalService_IsInternal()
+    public void IImplicitlyInternalService_IsPublic()
     {
         var type = typeof(IImplicitlyInternalService);
-        type.Attributes.Should().HaveFlag(TypeAttributes.NotPublic);
+        type.Attributes.Should().HaveFlag(TypeAttributes.Public);
     }
 }
 
